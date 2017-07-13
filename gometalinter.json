@@ -21,5 +21,9 @@
         "lll",
         "dupl",
         "goimports"
-    ]
+    ],
+    "Exclude": [
+         "resources.go"
+    ],
+    "Deadline": "60s"
 }

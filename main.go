@@ -22,9 +22,21 @@ func main() {
 		panic(err)
 	}
 
-	agent.ParseCommandLine()
+	err = agent.ParseCommandLine()
 
-	agent.Wait()
+	if err != nil {
+		panic(err)
+	}
 
-	agent.Close()
+	err = agent.Wait()
+
+	if err != nil {
+		panic(err)
+	}
+
+	err = agent.Close()
+
+	if err != nil {
+		panic(err)
+	}
 }

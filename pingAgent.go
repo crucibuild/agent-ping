@@ -1,5 +1,4 @@
 // Copyright (C) 2016 Christophe Camel, Jonathan Pigrée
-//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -27,13 +26,17 @@ import (
 	"github.com/crucibuild/sdk-agent-go/agentimpl"
 )
 
+// Resources represents an handler on the various data files
+// Used by the agent(avro files, manifest, etc...).
 var Resources http.FileSystem
 
+// PingAgent is an implementation over the Agent implementation
+// available in sdk-agent-go.
 type PingAgent struct {
 	*agentimpl.Agent
 }
 
-func MustOpenResources(path string) []byte {
+func mustOpenResources(path string) []byte {
 	file, err := Resources.Open(path)
 
 	if err != nil {
@@ -49,10 +52,11 @@ func MustOpenResources(path string) []byte {
 	return content
 }
 
+// NewPingAgent creates a new instance of PingAgent.
 func NewPingAgent() (agentiface.Agent, error) {
 	var agentSpec map[string]interface{}
 
-	manifest := MustOpenResources("/resources/manifest.json")
+	manifest := mustOpenResources("/resources/manifest.json")
 
 	err := json.Unmarshal(manifest, &agentSpec)
 
@@ -83,9 +87,8 @@ func (a *PingAgent) register(rawAvroSchema string) error {
 		return err
 	}
 
-	a.SchemaRegister(s)
-
-	return nil
+	_, err = a.SchemaRegister(s)
+	return err
 }
 
 func (a *PingAgent) init() error {
@@ -100,27 +103,26 @@ func (a *PingAgent) init() error {
 	}
 
 	// register schemas:
-	var content []byte
-	content = MustOpenResources("/schema/header.avro")
+	var content = mustOpenResources("/schema/header.avro")
 	if err := a.register(string(content[:])); err != nil {
 		return err
 	}
 
-	content = MustOpenResources("/schema/test-command.avro")
+	content = mustOpenResources("/schema/test-command.avro")
 	if err := a.register(string(content[:])); err != nil {
 		return err
 	}
 
-	content = MustOpenResources("/schema/tested-event.avro")
+	content = mustOpenResources("/schema/tested-event.avro")
 	if err := a.register(string(content[:])); err != nil {
 		return err
 	}
 
 	// register types
-	if _, err := a.TypeRegister(agentimpl.NewTypeFromType("crucibuild/agent-example-go#tested-event", example.TestedEventType)); err != nil {
+	if _, err := a.TypeRegister(agentimpl.NewTypeFromType("crucibuild/agent-ping#tested-event", schema.TestedEventType)); err != nil {
 		return err
 	}
-	if _, err := a.TypeRegister(agentimpl.NewTypeFromType("crucibuild/agent-example-go#test-command", example.TestCommandType)); err != nil {
+	if _, err := a.TypeRegister(agentimpl.NewTypeFromType("crucibuild/agent-ping#test-command", schema.TestCommandType)); err != nil {
 		return err
 	}
 
@@ -135,7 +137,7 @@ func (a *PingAgent) onStateChange(state agentiface.State) error {
 	case agentiface.StateConnected:
 		// register callbacks
 		_, err := a.RegisterEventCallback(map[string]interface{}{
-			"type": "crucibuild/agent-example-go#tested-event",
+			"type": "crucibuild/agent-ping#tested-event",
 		}, a.onTestedEvent)
 
 		if err != nil {
@@ -156,7 +158,7 @@ func (a *PingAgent) onStateChange(state agentiface.State) error {
 					return nil
 				case <-time.After(time.Duration(delay) * time.Millisecond):
 					// send command to pong agent
-					cmd := &example.TestCommand{Foo: &example.Header{Z: "ok"}, Value: "ping", X: rand.Int31n(1000)}
+					cmd := &schema.TestCommand{Foo: &schema.Header{Z: "ok"}, Value: "ping", X: rand.Int31n(1000)}
 
 					err := a.SendCommand("agent-pong", cmd)
 
@@ -176,7 +178,7 @@ func (a *PingAgent) onStateChange(state agentiface.State) error {
 }
 
 func (a *PingAgent) onTestedEvent(ctx agentiface.EventCtx) error {
-	a.Info("Receive tested-event: " + ctx.Message().(*example.TestedEvent).Value)
+	a.Info("Receive tested-event: " + ctx.Message().(*schema.TestedEvent).Value)
 
 	return nil
 }
