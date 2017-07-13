@@ -1,4 +1,4 @@
-//
+// Copyright (C) 2016 Christophe Camel, Jonathan Pigrée
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -87,9 +87,8 @@ func (a *PingAgent) register(rawAvroSchema string) error {
 		return err
 	}
 
-	a.SchemaRegister(s)
-
-	return nil
+	_, err = a.SchemaRegister(s)
+	return err
 }
 
 func (a *PingAgent) init() error {
@@ -104,8 +103,7 @@ func (a *PingAgent) init() error {
 	}
 
 	// register schemas:
-	var content []byte
-	content = mustOpenResources("/schema/header.avro")
+	var content = mustOpenResources("/schema/header.avro")
 	if err := a.register(string(content[:])); err != nil {
 		return err
 	}

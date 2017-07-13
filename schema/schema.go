@@ -24,21 +24,23 @@ type Header struct {
 	Z string
 }
 
-// TestCommand represents a command.
+// TestCommand represents a "test command" as defined in the avro file.
 type TestCommand struct {
 	Foo   *Header
 	Value string
 	X     int32
 }
 
-// TestCommandType represents
-var TestCommandType reflect.Type = nil
+// TestCommandType represents the type of a TestCommand.
+var TestCommandType reflect.Type
 
+// TestedEvent represents a "tested event" as defined in the avro file.
 type TestedEvent struct {
 	Value string
 }
 
-var TestedEventType reflect.Type = nil
+// TestedEventType represents the type of a TestedEvent.
+var TestedEventType reflect.Type
 
 func init() {
 	var err error
