@@ -27,13 +27,17 @@ import (
 	"github.com/crucibuild/sdk-agent-go/agentimpl"
 )
 
+// Resources represents an handler on the various data files
+// Used by the agent(avro files, manifest, etc...).
 var Resources http.FileSystem
 
+// PingAgent is an implementation over the Agent implementation
+// available in sdk-agent-go.
 type PingAgent struct {
 	*agentimpl.Agent
 }
 
-func MustOpenResources(path string) []byte {
+func mustOpenResources(path string) []byte {
 	file, err := Resources.Open(path)
 
 	if err != nil {
@@ -49,10 +53,11 @@ func MustOpenResources(path string) []byte {
 	return content
 }
 
+// NewPingAgent creates a new instance of PingAgent.
 func NewPingAgent() (agentiface.Agent, error) {
 	var agentSpec map[string]interface{}
 
-	manifest := MustOpenResources("/resources/manifest.json")
+	manifest := mustOpenResources("/resources/manifest.json")
 
 	err := json.Unmarshal(manifest, &agentSpec)
 
@@ -101,17 +106,17 @@ func (a *PingAgent) init() error {
 
 	// register schemas:
 	var content []byte
-	content = MustOpenResources("/schema/header.avro")
+	content = mustOpenResources("/schema/header.avro")
 	if err := a.register(string(content[:])); err != nil {
 		return err
 	}
 
-	content = MustOpenResources("/schema/test-command.avro")
+	content = mustOpenResources("/schema/test-command.avro")
 	if err := a.register(string(content[:])); err != nil {
 		return err
 	}
 
-	content = MustOpenResources("/schema/tested-event.avro")
+	content = mustOpenResources("/schema/tested-event.avro")
 	if err := a.register(string(content[:])); err != nil {
 		return err
 	}
