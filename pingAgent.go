@@ -1,4 +1,3 @@
-// Copyright (C) 2016 Christophe Camel, Jonathan Pigrée
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -122,10 +121,10 @@ func (a *PingAgent) init() error {
 	}
 
 	// register types
-	if _, err := a.TypeRegister(agentimpl.NewTypeFromType("crucibuild/agent-example-go#tested-event", example.TestedEventType)); err != nil {
+	if _, err := a.TypeRegister(agentimpl.NewTypeFromType("crucibuild/agent-ping#tested-event", schema.TestedEventType)); err != nil {
 		return err
 	}
-	if _, err := a.TypeRegister(agentimpl.NewTypeFromType("crucibuild/agent-example-go#test-command", example.TestCommandType)); err != nil {
+	if _, err := a.TypeRegister(agentimpl.NewTypeFromType("crucibuild/agent-ping#test-command", schema.TestCommandType)); err != nil {
 		return err
 	}
 
@@ -140,7 +139,7 @@ func (a *PingAgent) onStateChange(state agentiface.State) error {
 	case agentiface.StateConnected:
 		// register callbacks
 		_, err := a.RegisterEventCallback(map[string]interface{}{
-			"type": "crucibuild/agent-example-go#tested-event",
+			"type": "crucibuild/agent-ping#tested-event",
 		}, a.onTestedEvent)
 
 		if err != nil {
@@ -161,7 +160,7 @@ func (a *PingAgent) onStateChange(state agentiface.State) error {
 					return nil
 				case <-time.After(time.Duration(delay) * time.Millisecond):
 					// send command to pong agent
-					cmd := &example.TestCommand{Foo: &example.Header{Z: "ok"}, Value: "ping", X: rand.Int31n(1000)}
+					cmd := &schema.TestCommand{Foo: &schema.Header{Z: "ok"}, Value: "ping", X: rand.Int31n(1000)}
 
 					err := a.SendCommand("agent-pong", cmd)
 
@@ -181,7 +180,7 @@ func (a *PingAgent) onStateChange(state agentiface.State) error {
 }
 
 func (a *PingAgent) onTestedEvent(ctx agentiface.EventCtx) error {
-	a.Info("Receive tested-event: " + ctx.Message().(*example.TestedEvent).Value)
+	a.Info("Receive tested-event: " + ctx.Message().(*schema.TestedEvent).Value)
 
 	return nil
 }
