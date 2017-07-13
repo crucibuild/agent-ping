@@ -15,5 +15,5 @@ build: dependencies
 	resources -output="resources.go" -var="Resources" -trim="" resources/* schema/*
 	go build ./...
 
-ci: build #TODO fix warnings check
+ci: build check
 	true
